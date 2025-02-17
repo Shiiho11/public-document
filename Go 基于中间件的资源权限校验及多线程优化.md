@@ -67,7 +67,7 @@ func ResourcePermissionHandler(
 ## 获取资源id
 根据参数类型和路径获取资源ID。
 
-对于Header、Path、Query参数，一遍没有嵌套结构，直接使用idParamPath中第一个key获取即可。
+对于Header、Path、Query参数，一般没有嵌套结构，直接使用idParamPath中第一个key获取即可。
 
 对于Body，通常是JSON格式的数据，可能有嵌套结构。因此遍历idParamPath，按照key一层一层取，直到获取到资源id。
 
