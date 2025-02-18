@@ -9,17 +9,17 @@
 ## 需求设计
 希望尽可能可以高度复用，可以针对每个接口定制资源类型、所需权限、从请求信息中获取资源id。
 
-因此采用中间件的形式实现，使用方式如下所示。参数分别为资源类型、所需权限、资源id参数在哪里（Path、Query、Body等）、资源id路径（即键值，对于body中json数据可能会有几层嵌套，因此采用slice类型）。
+因此采用中间件的形式实现，使用方式如下所示。参数分别为资源类型、所需权限、资源id参数在哪里（Path、Query、Body等）、资源id路径（即键值，对于body中json数据可能会有几层嵌套，因此采用可变参数）。
 
 ```go
 group.GET("/:id",
-  ResourcePermissionHandler(ResourceTypeApp, PermissionRead, ParamTypePath, []string{"id"}),
+  ResourcePermissionHandler(ResourceTypeApp, PermissionRead, ParamTypePath, "id"),
   c.Get)
 group.POST("/update",
-  ResourcePermissionHandler(ResourceTypeApp, PermissionWrite, ParamTypeBody, []string{"data", "id"}),
+  ResourcePermissionHandler(ResourceTypeApp, PermissionWrite, ParamTypeBody, "data", "id"),
   c.Update)
 group.POST("/delete",
-  ResourcePermissionHandler(ResourceTypeApp, PermissionOwn, ParamTypeQuery, []string{"id"}),
+  ResourcePermissionHandler(ResourceTypeApp, PermissionOwn, ParamTypeQuery, "id"),
   c.Delete)
 ```
 
@@ -30,12 +30,12 @@ group.POST("/delete",
 //  resourceType: 资源类型,
 //  permission: 权限,
 //  resourceIdParamType: 资源ID参数类型,
-//  resourceIdParamPath: 资源ID参数路径, 例如: ["id"], ["data", "id"].
+//  resourceIdParamPath: 资源ID参数路径, 例如: "id" or "data", "id".
 func ResourcePermissionHandler(
     resourceType ResourceType,
     permission Permission,
     resourceIdParamType ParamType,
-    resourceIdParamPath []string,
+    resourceIdParamPath ...string,
 ) gin.HandlerFunc {
   return func(c *gin.Context) {
     id, err := getResourceId(c, resourceIdParamType, resourceIdParamPath) // 获取资源ID
